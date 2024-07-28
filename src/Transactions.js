@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -26,9 +27,9 @@ const Transactions = () => {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Transaction Assignment</h1>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+    <div className="container mt-5">
+      <h1 className="mb-4">Transaction Assignment</h1>
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>Date</th>
@@ -40,7 +41,7 @@ const Transactions = () => {
         </thead>
         <tbody>
           {transactions.map((transaction, index) => (
-            <tr key={transaction._id} style={{ borderBottom: '1px solid #ddd' }}>
+            <tr key={transaction._id}>
               <td>{new Date(transaction.date).toLocaleDateString()}</td>
               <td>{transaction.description}</td>
               <td>{transaction.type === 'Credit' ? transaction.amount : ''}</td>
@@ -51,16 +52,7 @@ const Transactions = () => {
         </tbody>
       </table>
       <button
-        style={{
-          marginTop: '20px',
-          padding: '10px 20px',
-          fontSize: '16px',
-          cursor: 'pointer',
-          backgroundColor: '#007bff',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '5px'
-        }}
+        className="btn btn-primary mt-3"
         onClick={() => navigate('/add-transaction')}
       >
         + Add Transaction

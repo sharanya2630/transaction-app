@@ -10,6 +10,8 @@
 //   const [error, setError] = useState('');
 //   const navigate = useNavigate();
 
+//   const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'; // Fallback URL
+
 //   const handleSubmit = (e) => {
 //     e.preventDefault();
 //     if (!amount || !description || parseFloat(amount) <= 0) {
@@ -18,17 +20,30 @@
 //     }
 
 //     setLoading(true);
-//     axios.post('http://localhost:5000/api/transactions', { type, amount: parseFloat(amount), description })
+//     axios.post(`${apiUrl}/api/transactions`, { type, amount: parseFloat(amount), description })
 //       .then(() => {
 //         setLoading(false);
 //         navigate('/');
 //       })
-//       .catch(error => {
+//       .catch((error) => {
 //         setLoading(false);
-//         setError('Failed to add transaction. Please try again.');
+//         if (error.response) {
+//           setError(`Error: ${error.response.data.message || 'Something went wrong!'}`);
+//         } else if (error.request) {
+//           setError('Network error. Please check your connection and try again.');
+//         } else {
+//           setError('An unexpected error occurred.');
+//         }
 //         console.error(error);
 //       });
 //   };
+
+//   const handleChange = (setter) => (e) => {
+//     setter(e.target.value);
+//     setError(''); 
+//   };
+
+//   console.log('API URL:', apiUrl); 
 
 //   return (
 //     <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
@@ -50,7 +65,7 @@
 //           <input
 //             type="number"
 //             value={amount}
-//             onChange={(e) => setAmount(e.target.value)}
+//             onChange={handleChange(setAmount)}
 //             required
 //             min="0.01"
 //             step="0.01"
@@ -62,7 +77,7 @@
 //           <input
 //             type="text"
 //             value={description}
-//             onChange={(e) => setDescription(e.target.value)}
+//             onChange={handleChange(setDescription)}
 //             required
 //             style={{ width: '100%', padding: '8px', margin: '5px 0' }}
 //           />
@@ -105,6 +120,7 @@
 // export default AddTransaction;
 
 
+
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -117,17 +133,24 @@ const AddTransaction = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'; // Fallback URL
+  const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000'; 
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!amount || !description || parseFloat(amount) <= 0) {
-      setError("Amount must be a positive number and description are required fields.");
+      setError(
+        'Amount must be a positive number and description are required fields.'
+      );
       return;
     }
 
     setLoading(true);
-    axios.post(`${apiUrl}/api/transactions`, { type, amount: parseFloat(amount), description })
+    axios
+      .post(`${apiUrl}/api/transactions`, {
+        type,
+        amount: parseFloat(amount),
+        description,
+      })
       .then(() => {
         setLoading(false);
         navigate('/');
@@ -135,13 +158,12 @@ const AddTransaction = () => {
       .catch((error) => {
         setLoading(false);
         if (error.response) {
-          // Request made and server responded
-          setError(`Error: ${error.response.data.message || 'Something went wrong!'}`);
+          setError(
+            `Error: ${error.response.data.message || 'Something went wrong!'}`
+          );
         } else if (error.request) {
-          // Request made but no response received
           setError('Network error. Please check your connection and try again.');
         } else {
-          // Something else caused the error
           setError('An unexpected error occurred.');
         }
         console.error(error);
@@ -150,21 +172,44 @@ const AddTransaction = () => {
 
   const handleChange = (setter) => (e) => {
     setter(e.target.value);
-    setError(''); // Clear error message on input change
+    setError('');
   };
 
-  console.log('API URL:', apiUrl); // Check the API URL in the console
+  console.log('API URL:', apiUrl);
 
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
-      <h2>New Transaction</h2>
+    <div
+      style={{
+        padding: '20px',
+        maxWidth: '500px',
+        margin: '50px auto',
+        backgroundColor: '#f5f5f5',
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      <h2
+        style={{
+          textAlign: 'center',
+          color: '#333',
+        }}
+      >
+        New Transaction
+      </h2>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '10px' }}>
           <label>Transaction Type:</label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
-            style={{ width: '100%', padding: '8px', margin: '5px 0' }}
+            style={{
+              width: '100%',
+              padding: '8px',
+              margin: '5px 0',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+            }}
           >
             <option value="Credit">Credit</option>
             <option value="Debit">Debit</option>
@@ -179,7 +224,13 @@ const AddTransaction = () => {
             required
             min="0.01"
             step="0.01"
-            style={{ width: '100%', padding: '8px', margin: '5px 0' }}
+            style={{
+              width: '100%',
+              padding: '8px',
+              margin: '5px 0',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+            }}
           />
         </div>
         <div style={{ marginBottom: '10px' }}>
@@ -189,43 +240,58 @@ const AddTransaction = () => {
             value={description}
             onChange={handleChange(setDescription)}
             required
-            style={{ width: '100%', padding: '8px', margin: '5px 0' }}
+            style={{
+              width: '100%',
+              padding: '8px',
+              margin: '5px 0',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+            }}
           />
         </div>
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
+        <div
           style={{
-            backgroundColor: '#007bff',
-            color: '#fff',
-            border: 'none',
-            padding: '10px 15px',
-            cursor: 'pointer',
-            marginRight: '10px',
-            borderRadius: '5px'
+            display: 'flex',
+            justifyContent: 'flex-end', 
+            marginTop: '20px', 
           }}
         >
-          {loading ? 'Saving...' : 'Save'}
-        </button>
-        <button
-          type="button"
-          style={{
-            backgroundColor: '#6c757d',
-            color: '#fff',
-            border: 'none',
-            padding: '10px 15px',
-            cursor: 'pointer',
-            borderRadius: '5px'
-          }}
-          onClick={() => navigate('/')}
-        >
-          Cancel
-        </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              backgroundColor: '#007bff',
+              color: '#fff',
+              border: 'none',
+              padding: '10px 15px',
+              cursor: 'pointer',
+              borderRadius: '5px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+              marginRight: '10px', 
+            }}
+          >
+            {loading ? 'Saving...' : 'Save'}
+          </button>
+          <button
+            type="button"
+            style={{
+              backgroundColor: '#6c757d',
+              color: '#fff',
+              border: 'none',
+              padding: '10px 15px',
+              cursor: 'pointer',
+              borderRadius: '5px',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            }}
+            onClick={() => navigate('/')}
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   );
 };
 
 export default AddTransaction;
-
